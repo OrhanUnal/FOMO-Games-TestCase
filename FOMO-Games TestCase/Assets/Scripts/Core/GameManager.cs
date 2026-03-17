@@ -5,13 +5,14 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public int moveLimit { get; set; }
-    public int blockSize { get; private set; }
+    private int moveLimit;
+    private float blockSize;
 
     [Header("Level Setting")]
     [SerializeField] int levelNumber = 1;
     [SerializeField] public float cellGap = 0.95f;
-
+    [SerializeField] private float boardWidth = 6f;
+    [SerializeField] private float boardHeight = 8f;
 
 
     private void Awake()
@@ -23,13 +24,14 @@ public class GameManager : MonoBehaviour
         }
         instance = this;
         DontDestroyOnLoad(gameObject);
-        blockSize = 2;
     }
 
     void Start()
     {
-        BoardLoader loader = new BoardLoader(levelNumber);
+        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight);
         loader.InitializeBoard();
+        blockSize = loader.BlockSize;
+        moveLimit = loader.MoveLimit;
     }
 
     // Update is called once per frame
@@ -37,6 +39,4 @@ public class GameManager : MonoBehaviour
     {
         
     }
-
-    
 }
