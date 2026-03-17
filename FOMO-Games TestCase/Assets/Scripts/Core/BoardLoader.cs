@@ -8,7 +8,6 @@ public class BoardLoader
     private string LevelPath;
     private float cellGap;
     private float blockGap;
-    private float blockSize;
     private float boardWidth;
     private float boardHeight;
     private BlockShapeSO blockShapeSO;
@@ -19,8 +18,8 @@ public class BoardLoader
 
     private Dictionary<string, Material> materialCache = new Dictionary<string, Material>();
 
-    public float BlockSize => blockSize;
     public int MoveLimit => levelData.MoveLimit;
+    public float blockSize;
 
     public BoardLoader(int levelNumber, float boardWidth, float boardHeight, BlockShapeSO blockShapeSO, BlockShapeSO exitsSO)
     {

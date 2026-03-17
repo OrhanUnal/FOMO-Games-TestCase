@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
     private int moveLimit;
-    private float blockSize;
+    public float BlockSize { get; private set; }
 
     [Header("Level Setting")]
     [SerializeField] int levelNumber = 1;
@@ -32,13 +32,18 @@ public class GameManager : MonoBehaviour
     {
         BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight, blockShapeSO, exitsSO);
         loader.InitializeBoard();
-        blockSize = loader.BlockSize;
         moveLimit = loader.MoveLimit;
+        BlockSize = loader.blockSize;
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    public void DecrementMoveLimit()
+    {
+        moveLimit -= 1;
     }
 }
