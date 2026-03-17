@@ -6,21 +6,27 @@ public class BoardLoader
 {
     private string LevelPath;
     private float cellGap;
+    private float blockGap;
     private float blockSize;
     private float boardWidth;
     private float boardHeight;
-    
+    private BlockShapeSO blockShapeSO;
+    private BlockColorSO colorSO;
+
     private LevelData levelData;
     private GameManager gameManager;
 
     public float BlockSize => blockSize;
     public int MoveLimit => levelData.MoveLimit;
 
-    public BoardLoader(int levelNumber, float boardWidth, float boardHeight)
+    public BoardLoader(int levelNumber, float boardWidth, float boardHeight, BlockShapeSO blockShapeSO, BlockColorSO colorSO)
     {
         LevelPath = Application.dataPath + $"/LevelsJson/Level{levelNumber}.json";
         gameManager = GameManager.instance;
         cellGap = gameManager.cellGap;
+        blockGap = cellGap * 0.9f;
+        this.blockShapeSO = blockShapeSO;
+        this.colorSO = colorSO;
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
     }
@@ -55,7 +61,7 @@ public class BoardLoader
             Vector3 position = new Vector3(
                 cell.Col * blockSize,
                 -cell.Row * blockSize,
-                0
+                10
             );
 
             GameObject cellObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -72,9 +78,34 @@ public class BoardLoader
 
     private void SpawnBlocks()
     {
-        foreach(MovableData block in levelData.MovableInfo)
+        Transform blockParent = new GameObject("Blocks").transform;
+
+        foreach (MovableData data in levelData.MovableInfo)
         {
-            Debug.Log($"Column is{block.Col} and row is {block.Row} ");
+            //boyunu ve cinsini ayarla
+            GameObject prefab = blockShapeSO.GetBlockPrefab(data.Length);
+            Vector3 position = new Vector3(
+                data.Col * blockSize,
+                -data.Row * blockSize,
+                0
+            );
+
+            GameObject blockObj = Object.Instantiate(prefab, position, Quaternion.identity, blockParent);
+            blockObj.transform.localScale = Vector3.one * blockSize * blockGap;
+            blockObj.name = $"Block_{data.Row}_{data.Col}";
+
+            // Rengini ve yonunu yap
+            bool isVertical = data.Direction.Contains(0) || data.Direction.Contains(2);
+            Material mat = colorSO.GetMaterial(data.Colors, data.Length, isVertical);
+            Renderer renderer = blockObj.GetComponentInChildren<Renderer>();
+            if (renderer != null && mat != null)
+            {
+                renderer.material = mat;
+            }
+
+            //spawn et
+            BlockBase block = blockObj.GetComponent<BlockBase>();
+            block.Initialize(data.Colors, data.Direction, data.Row, data.Col);
         }
     }
 }

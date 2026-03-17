@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] public float cellGap = 0.95f;
     [SerializeField] private float boardWidth = 6f;
     [SerializeField] private float boardHeight = 8f;
+    [SerializeField] private BlockShapeSO blockShapeSO;
+    [SerializeField] private BlockColorSO blockColorSO;
 
 
     private void Awake()
@@ -28,7 +30,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight);
+        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight, blockShapeSO, blockColorSO);
         loader.InitializeBoard();
         blockSize = loader.BlockSize;
         moveLimit = loader.MoveLimit;
