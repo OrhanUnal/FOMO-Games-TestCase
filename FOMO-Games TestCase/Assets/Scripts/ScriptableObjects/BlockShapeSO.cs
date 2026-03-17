@@ -1,20 +1,26 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BlockShapeSO", menuName = "Scriptable Objects/BlockShapeSO")]
 public class BlockShapeSO : ScriptableObject
 {
-    public GameObject block1x1Prefab;
-    public GameObject block1x2Prefab;
-
-    public GameObject GetBlockPrefab(int length)
+    [System.Serializable]
+    public class PrefabEntry
     {
-        switch (length)
+        public int id;
+        public GameObject prefab;
+    }
+
+    public List<PrefabEntry> prefabs;
+
+    public GameObject GetPrefab(int id)
+    {
+        foreach (PrefabEntry entry in prefabs)
         {
-            case 1: return block1x1Prefab;
-            case 2: return block1x2Prefab;
-            default:
-                Debug.Log("There is not such block right now");
-                return block1x1Prefab;
+            if (entry.id == id)
+                return entry.prefab;
         }
+        Debug.LogWarning($"No prefab found for id: {id}");
+        return null;
     }
 }

@@ -10,10 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e2b3b27196f5c9e44b413a5e6c73a7b7, type: 3}
-  m_Name: BlockShapeSO
+  m_Name: ExitShapeSO
   m_EditorClassIdentifier: 
   prefabs:
+  - id: 0
+    prefab: {fileID: 3087305847032282118, guid: cfd4ddb157e8a864fbc3152e6befe7ba, type: 3}
   - id: 1
-    prefab: {fileID: 5124894346633255957, guid: b1ad757121e42b0429836515c5115521, type: 3}
+    prefab: {fileID: 3087305847032282118, guid: 1400b437278deac41adfbce9e511cb75, type: 3}
   - id: 2
-    prefab: {fileID: 5124894346633255957, guid: 2887e304cb3b89743b987a95807fcdab, type: 3}
+    prefab: {fileID: 3087305847032282118, guid: 970e0f05d0cc683499c3e3c9101dea70, type: 3}
+  - id: 3
+    prefab: {fileID: 3087305847032282118, guid: 9bcb83a466046e94698fa30ae30c4be2, type: 3}

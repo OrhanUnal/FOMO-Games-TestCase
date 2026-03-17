@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float boardWidth = 6f;
     [SerializeField] private float boardHeight = 8f;
     [SerializeField] private BlockShapeSO blockShapeSO;
-    [SerializeField] private BlockColorSO blockColorSO;
+    [SerializeField] private BlockShapeSO exitsSO;
 
 
     private void Awake()
@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight, blockShapeSO, blockColorSO);
+        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight, blockShapeSO, exitsSO);
         loader.InitializeBoard();
         blockSize = loader.BlockSize;
         moveLimit = loader.MoveLimit;

@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -11,24 +12,26 @@ public class BoardLoader
     private float boardWidth;
     private float boardHeight;
     private BlockShapeSO blockShapeSO;
-    private BlockColorSO colorSO;
+    private BlockShapeSO exitShapeSO;
 
     private LevelData levelData;
     private GameManager gameManager;
 
+    private Dictionary<string, Material> materialCache = new Dictionary<string, Material>();
+
     public float BlockSize => blockSize;
     public int MoveLimit => levelData.MoveLimit;
 
-    public BoardLoader(int levelNumber, float boardWidth, float boardHeight, BlockShapeSO blockShapeSO, BlockColorSO colorSO)
+    public BoardLoader(int levelNumber, float boardWidth, float boardHeight, BlockShapeSO blockShapeSO, BlockShapeSO exitsSO)
     {
         LevelPath = Application.dataPath + $"/LevelsJson/Level{levelNumber}.json";
         gameManager = GameManager.instance;
         cellGap = gameManager.cellGap;
         blockGap = cellGap * 0.9f;
         this.blockShapeSO = blockShapeSO;
-        this.colorSO = colorSO;
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
+        this.exitShapeSO = exitsSO;
     }
 
     public void InitializeBoard()
@@ -37,6 +40,7 @@ public class BoardLoader
         CalculateBlockSize();
         SpawnCells();
         SpawnBlocks();
+        SpawnExits();
     }
 
     private void DeserializeData()
@@ -80,32 +84,94 @@ public class BoardLoader
     {
         Transform blockParent = new GameObject("Blocks").transform;
 
-        foreach (MovableData data in levelData.MovableInfo)
+        foreach (MovableData blocksData in levelData.MovableInfo)
         {
             //boyunu ve cinsini ayarla
-            GameObject prefab = blockShapeSO.GetBlockPrefab(data.Length);
+            GameObject prefab = blockShapeSO.GetPrefab(blocksData.Length);
             Vector3 position = new Vector3(
-                data.Col * blockSize,
-                -data.Row * blockSize,
+                blocksData.Col * blockSize,
+                -blocksData.Row * blockSize,
                 0
             );
 
-            GameObject blockObj = Object.Instantiate(prefab, position, Quaternion.identity, blockParent);
+            //oyuna koy
+            bool isVertical = blocksData.Direction.Contains(0) || blocksData.Direction.Contains(2);
+            Vector3 rotationOfBlock = isVertical ? new Vector3(0, 0, -90) : Vector3.zero;
+            GameObject blockObj = Object.Instantiate(prefab, position, Quaternion.Euler(rotationOfBlock), blockParent);
             blockObj.transform.localScale = Vector3.one * blockSize * blockGap;
-            blockObj.name = $"Block_{data.Row}_{data.Col}";
+            blockObj.name = $"Block_{blocksData.Row}_{blocksData.Col}";
 
             // Rengini ve yonunu yap
-            bool isVertical = data.Direction.Contains(0) || data.Direction.Contains(2);
-            Material mat = colorSO.GetMaterial(data.Colors, data.Length, isVertical);
+            Material mat = GetMaterial(blocksData.Colors, blocksData.Length, isVertical);
             Renderer renderer = blockObj.GetComponentInChildren<Renderer>();
             if (renderer != null && mat != null)
             {
                 renderer.material = mat;
             }
 
-            //spawn et
+            //init et
             BlockBase block = blockObj.GetComponent<BlockBase>();
-            block.Initialize(data.Colors, data.Direction, data.Row, data.Col);
+            block.Initialize(blocksData.Colors, blocksData.Direction, blocksData.Row, blocksData.Col);
         }
+    }
+
+    private void SpawnExits()
+    {
+        Transform exitParent = new GameObject("Exits").transform;
+
+        foreach (ExitData exitsData in levelData.ExitInfo)
+        {
+            //boyunu ve cinsini ayarla
+            GameObject prefab = exitShapeSO.GetPrefab(exitsData.Direction);
+            Vector3 position = new Vector3(
+                exitsData.Col * blockSize,
+                -exitsData.Row * blockSize,
+                0
+            );
+
+            //oyuna koy
+            GameObject blockObj = Object.Instantiate(prefab, position, Quaternion.identity, exitParent);
+            blockObj.transform.localScale = Vector3.one * cellGap * blockSize;
+            blockObj.name = $"Exit_{exitsData.Row}_{exitsData.Col}";
+
+            // Rengini ve yonunu yap
+            Material mat = GetMaterial(exitsData.Colors);
+            Renderer renderer = blockObj.GetComponentInChildren<Renderer>();
+            if (renderer != null && mat != null)
+            {
+                renderer.material = mat;
+            }
+
+            //init et
+            //BlockBase block = blockObj.GetComponent<BlockBase>();
+            //block.Initialize(blocksData.Colors, blocksData.Direction, blocksData.Row, blocksData.Col);
+        }
+    }
+
+    private Material GetMaterial(int colorId, int cubeType = 1, bool isVertical = true)
+    {
+        string colorName = ((Enums.BlockColor)colorId).ToString();
+        if (colorName == null) return null;
+
+        string orientation = isVertical ? "Up" : "Paralel";
+        string textureName = $"Cube{cubeType:D2}{colorName}{orientation}TextureMap";
+        string texturePath = $"Textures/Cube{cubeType}/{textureName}";
+
+        if (materialCache.ContainsKey(textureName))
+            return materialCache[textureName];
+
+        Texture2D texture = Resources.Load<Texture2D>(texturePath);
+        if (texture == null)
+        {
+            Debug.LogWarning($"Texture not found at: {texturePath}");
+            return null;
+        }
+
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.SetTexture("_BaseMap", texture);
+        mat.name = textureName;
+
+        materialCache[textureName] = mat;
+        return mat;
     }
 }
