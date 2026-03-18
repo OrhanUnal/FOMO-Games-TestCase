@@ -9,7 +9,8 @@ public class BlockBase : MonoBehaviour
     private List<int> directions;
     private int row;
     private int col;
-    private float blockSize;
+
+    protected float blockSize;
 
     public static event Action OnBlockMoved;
     public static event Action<int> OnBlockCountChanged;
@@ -57,6 +58,7 @@ public class BlockBase : MonoBehaviour
         foreach(Vector3 pos in GetRayOrigins())
         {
             RaycastHit hit;
+            Debug.DrawRay(pos, directionAsVector * 10f, Color.red, 2f);
             Physics.Raycast(pos, directionAsVector, out hit);
             if (hit.distance < minDistance)
             {
@@ -64,7 +66,7 @@ public class BlockBase : MonoBehaviour
                 minDistance = hit.distance;
             }
         }
-        if (minDistance >= blockSize)
+        if (minDistance >= blockSize && smallestHit.collider != null)
         {
             float distanceToTravel = minDistance - blockSize / 2;
             bool canDestroy = false;

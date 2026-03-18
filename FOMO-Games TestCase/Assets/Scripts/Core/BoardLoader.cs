@@ -31,7 +31,7 @@ public class BoardLoader : MonoBehaviour
         SpawnBlocks();
         SpawnExits();
 
-        GameManager.instance.SetLevelData(blockSize, levelData.MoveLimit);
+        GameManager.instance.SetLevelData(levelData.MoveLimit);
     }
 
     private void DeserializeData()

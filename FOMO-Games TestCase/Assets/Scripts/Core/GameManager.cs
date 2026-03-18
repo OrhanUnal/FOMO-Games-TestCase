@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
     private int moveLimit;
     private int blockCount;
     private bool hasMoveLimit;
-    public float BlockSize { get; private set; }
 
 
     private void Awake()
@@ -53,9 +52,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SetLevelData(float blockSize, int moveLimit)
+    public void SetLevelData(int moveLimit)
     {
-        BlockSize = blockSize;
         this.moveLimit = moveLimit;
         hasMoveLimit = moveLimit > 0;
     }
