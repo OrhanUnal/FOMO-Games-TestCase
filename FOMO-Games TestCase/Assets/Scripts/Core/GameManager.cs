@@ -6,15 +6,9 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
     private int moveLimit;
+    private int blockCount;
+    private bool hasMoveLimit;
     public float BlockSize { get; private set; }
-
-    [Header("Level Setting")]
-    [SerializeField] int levelNumber = 1;
-    [SerializeField] public float cellGap = 0.95f;
-    [SerializeField] private float boardWidth = 6f;
-    [SerializeField] private float boardHeight = 8f;
-    [SerializeField] private BlockShapeSO blockShapeSO;
-    [SerializeField] private BlockShapeSO exitsSO;
 
 
     private void Awake()
@@ -27,23 +21,42 @@ public class GameManager : MonoBehaviour
         instance = this;
         DontDestroyOnLoad(gameObject);
     }
-
-    void Start()
+    private void OnEnable()
     {
-        BoardLoader loader = new BoardLoader(levelNumber, boardWidth, boardHeight, blockShapeSO, exitsSO);
-        loader.InitializeBoard();
-        moveLimit = loader.MoveLimit;
-        BlockSize = loader.blockSize;
+        BlockBase.OnBlockMoved += DecrementMoveLimit;
+        BlockBase.OnBlockCountChanged += ChangeBlockCount;
+    }
+   
+    private void OnDisable()
+    {
+        BlockBase.OnBlockMoved -= DecrementMoveLimit;
+        BlockBase.OnBlockCountChanged -= ChangeBlockCount;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void DecrementMoveLimit()
     {
-        
-    }
+        if (!hasMoveLimit) return;
 
-    public void DecrementMoveLimit()
-    {
         moveLimit -= 1;
+        if (moveLimit <= 0)
+        {
+            //fail code
+        }
+    }
+
+    private void ChangeBlockCount(int amount)
+    {
+        blockCount += amount;
+        if (blockCount <= 0)
+        {
+            //win code
+        }
+    }
+
+    public void SetLevelData(float blockSize, int moveLimit)
+    {
+        BlockSize = blockSize;
+        this.moveLimit = moveLimit;
+        hasMoveLimit = moveLimit > 0;
     }
 }

@@ -54,7 +54,6 @@ public class InputManager : MonoBehaviour
 
         if (dragDelta.magnitude < swipeThreshold) return;
 
-        // Determine direction based on which axis has more movement
         Enums.Directions direction;
         if (Mathf.Abs(dragDelta.x) > Mathf.Abs(dragDelta.y))
         {
@@ -65,10 +64,7 @@ public class InputManager : MonoBehaviour
             direction = dragDelta.y > 0 ? Enums.Directions.up : Enums.Directions.down;
         }
 
-        // Try to move the block
         selectedBlock.TryToMove(direction);
-
-        // Reset so we don't trigger multiple moves per swipe
         isDragging = false;
         selectedBlock = null;
     }

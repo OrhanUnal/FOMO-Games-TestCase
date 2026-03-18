@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,9 @@ public class BlockBase : MonoBehaviour
     private int col;
     private float blockSize;
 
+    public static event Action OnBlockMoved;
+    public static event Action<int> OnBlockCountChanged;
+
     public void Initialize(int ColorID, List<int> Directions, int Row, int Col, float BlockSize)
     {
         colorId = (Enums.BlockColor)ColorID;
@@ -17,6 +21,11 @@ public class BlockBase : MonoBehaviour
         row = Row;
         col = Col;
         blockSize = BlockSize;
+    }
+
+    private void Start()
+    {
+        OnBlockCountChanged?.Invoke(1);
     }
 
     public void TryToMove(Enums.Directions direction)
@@ -70,7 +79,6 @@ public class BlockBase : MonoBehaviour
 
     private IEnumerator Move(Vector3 dir, float amount, bool hitsExit)
     {
-        GameManager.instance.DecrementMoveLimit();
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = transform.position + dir * amount;
         float elapsed = 0f;
@@ -84,9 +92,13 @@ public class BlockBase : MonoBehaviour
         }
 
         transform.position = targetPosition;
+        OnBlockMoved?.Invoke();
 
         if (hitsExit)
+        {
+            OnBlockCountChanged?.Invoke(-1);
             Destroy(gameObject);
+        }
     }
 
     virtual protected List<Vector3> GetRayOrigins()
