@@ -9,6 +9,7 @@ public class BlockBase : MonoBehaviour
     private List<int> directions;
     private int row;
     private int col;
+    private bool isMoving;
 
     protected float blockSize;
 
@@ -22,6 +23,7 @@ public class BlockBase : MonoBehaviour
         row = Row;
         col = Col;
         blockSize = BlockSize;
+        isMoving = false;
     }
 
     private void Start()
@@ -32,7 +34,8 @@ public class BlockBase : MonoBehaviour
     public void TryToMove(Enums.Directions direction)
     {
         if (!directions.Contains((int)direction)) return;
-        
+        if (isMoving) return;        
+
         Vector3 directionAsVector;
         switch (direction)
         {
@@ -81,6 +84,7 @@ public class BlockBase : MonoBehaviour
 
     private IEnumerator Move(Vector3 dir, float amount, bool hitsExit)
     {
+        isMoving = true;
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = transform.position + dir * amount;
         float elapsed = 0f;
@@ -94,8 +98,10 @@ public class BlockBase : MonoBehaviour
         }
 
         transform.position = targetPosition;
+        
         OnBlockMoved?.Invoke();
-
+        isMoving = false;
+        
         if (hitsExit)
         {
             OnBlockCountChanged?.Invoke(-1);

@@ -19,21 +19,38 @@ public class BoardLoader : MonoBehaviour
     private float blockSize;
     private LevelData levelData;
     private MaterialFactory materialFactory;
+    private Transform cellParent;
+    private Transform blockParent;
+    private Transform exitParent;
+
 
     public void Start()
     {
         materialFactory = new MaterialFactory();
         blockGap = cellGap * 0.9f;
+        InitializeBoard();
+    }
+    private void OnEnable()
+    {
+        UIManager.OnRetryClicked += RetryLevel;
+        UIManager.OnNextLevelClicked += NextLevel;
+    }
 
+    private void OnDisable()
+    {
+        UIManager.OnRetryClicked -= RetryLevel;
+        UIManager.OnNextLevelClicked -= NextLevel;
+    }
+
+    private void InitializeBoard()
+    {
         DeserializeData();
         CalculateBlockSize();
         SpawnCells();
         SpawnBlocks();
         SpawnExits();
-
         GameManager.instance.SetLevelData(levelData.MoveLimit);
     }
-
     private void DeserializeData()
     {
         string levelPath = Application.dataPath + $"/LevelsJson/Level{levelNumber}.json";
@@ -50,7 +67,7 @@ public class BoardLoader : MonoBehaviour
 
     private void SpawnCells()
     {
-        Transform cellParent = new GameObject("Cells").transform;
+        cellParent = new GameObject("Cells").transform;
 
         foreach (CellData cell in levelData.CellInfo)
         {
@@ -74,7 +91,7 @@ public class BoardLoader : MonoBehaviour
 
     private void SpawnBlocks()
     {
-        Transform blockParent = new GameObject("Blocks").transform;
+        blockParent = new GameObject("Blocks").transform;
 
         foreach (MovableData blocksData in levelData.MovableInfo)
         {
@@ -108,7 +125,7 @@ public class BoardLoader : MonoBehaviour
 
     private void SpawnExits()
     {
-        Transform exitParent = new GameObject("Exits").transform;
+        exitParent = new GameObject("Exits").transform;
 
         foreach (ExitData exitsData in levelData.ExitInfo)
         {
@@ -133,5 +150,30 @@ public class BoardLoader : MonoBehaviour
             ExitGates exit = exitObj.GetComponent<ExitGates>();
             exit.Initialize(exitsData.Colors);
         }
+    }
+    private void RetryLevel()
+    {
+        ClearBoard();
+        InitializeBoard();
+    }
+
+    private void NextLevel()
+    {
+        if (levelNumber == 4)
+        {
+            Debug.Log("Elimde baska level yok");
+            return;
+        }
+
+        levelNumber++;
+        ClearBoard();
+        InitializeBoard();
+    }
+
+    private void ClearBoard()
+    {
+        if (cellParent) Destroy(cellParent.gameObject);
+        if (blockParent) Destroy(blockParent.gameObject);
+        if (exitParent) Destroy(exitParent.gameObject);
     }
 }
