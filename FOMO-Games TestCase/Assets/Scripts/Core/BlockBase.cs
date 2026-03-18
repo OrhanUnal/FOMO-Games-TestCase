@@ -4,38 +4,42 @@ using UnityEngine;
 
 public class BlockBase : MonoBehaviour
 {
-    private int colorId;
+    private Enums.BlockColor colorId;
     private List<int> directions;
     private int row;
     private int col;
+    private float blockSize;
 
-    public void Initialize(int ColorID, List<int> Directions, int Row, int Col)
+    public void Initialize(int ColorID, List<int> Directions, int Row, int Col, float BlockSize)
     {
-        colorId = ColorID;
+        colorId = (Enums.BlockColor)ColorID;
         directions = Directions;
         row = Row;
         col = Col;
+        blockSize = BlockSize;
     }
 
     public void TryToMove(Enums.Directions direction)
     {
-        Vector3 dir;
+        if (!directions.Contains((int)direction)) return;
+        
+        Vector3 directionAsVector;
         switch (direction)
         {
             case Enums.Directions.down:
-                dir = Vector3.down;
+                directionAsVector = Vector3.down;
                 break;    
             case Enums.Directions.up:
-                dir = Vector3.up; 
+                directionAsVector = Vector3.up; 
                 break;    
             case Enums.Directions.left:
-                dir = Vector3.left; 
+                directionAsVector = Vector3.left; 
                 break;    
             case Enums.Directions.right:
-                dir = Vector3.right;
+                directionAsVector = Vector3.right;
                 break;
             default:
-                dir = Vector3.up;
+                directionAsVector = Vector3.up;
                 break;
         }
 
@@ -44,26 +48,31 @@ public class BlockBase : MonoBehaviour
         foreach(Vector3 pos in GetRayOrigins())
         {
             RaycastHit hit;
-            Physics.Raycast(pos, dir, out hit);
+            Physics.Raycast(pos, directionAsVector, out hit);
             if (hit.distance < minDistance)
             {
                 smallestHit = hit;
                 minDistance = hit.distance;
             }
         }
-        if (minDistance >= GameManager.instance.BlockSize)
+        if (minDistance >= blockSize)
         {
-            StartCoroutine(Move(dir, minDistance));
-            if (smallestHit.collider.GetComponent<ExitGates>())
-                Destroy(gameObject);
+            float distanceToTravel = minDistance - blockSize / 2;
+            bool canDestroy = false;
+
+            ExitGates closestExitGate = smallestHit.collider.GetComponent<ExitGates>();
+            if (closestExitGate && closestExitGate.IsMatchingColors(colorId))
+                canDestroy = true;
+
+            StartCoroutine(Move(directionAsVector, distanceToTravel, canDestroy));
         }
     }
 
-    public IEnumerator Move(Vector3 directionAsVector, float amount)
+    private IEnumerator Move(Vector3 dir, float amount, bool hitsExit)
     {
         GameManager.instance.DecrementMoveLimit();
         Vector3 startPosition = transform.position;
-        Vector3 targetPosition = transform.position + directionAsVector * amount;
+        Vector3 targetPosition = transform.position + dir * amount;
         float elapsed = 0f;
         float duration = 0.2f;
 
@@ -75,9 +84,12 @@ public class BlockBase : MonoBehaviour
         }
 
         transform.position = targetPosition;
+
+        if (hitsExit)
+            Destroy(gameObject);
     }
 
-    virtual public List<Vector3> GetRayOrigins()
+    virtual protected List<Vector3> GetRayOrigins()
     {
         List<Vector3> listOfRayOrigins = new List<Vector3>();
         listOfRayOrigins.Add(transform.position);

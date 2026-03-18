@@ -110,7 +110,7 @@ public class BoardLoader
 
             //init et
             BlockBase block = blockObj.GetComponent<BlockBase>();
-            block.Initialize(blocksData.Colors, blocksData.Direction, blocksData.Row, blocksData.Col);
+            block.Initialize(blocksData.Colors, blocksData.Direction, blocksData.Row, blocksData.Col, blockSize);
         }
     }
 
@@ -129,21 +129,21 @@ public class BoardLoader
             );
 
             //oyuna koy
-            GameObject blockObj = Object.Instantiate(prefab, position, Quaternion.identity, exitParent);
-            blockObj.transform.localScale = Vector3.one * cellGap * blockSize;
-            blockObj.name = $"Exit_{exitsData.Row}_{exitsData.Col}";
+            GameObject exitObj = Object.Instantiate(prefab, position, Quaternion.identity, exitParent);
+            exitObj.transform.localScale = Vector3.one * cellGap * blockSize;
+            exitObj.name = $"Exit_{exitsData.Row}_{exitsData.Col}";
 
-            // Rengini ve yonunu yap
+            // Rengini ayarla
             Material mat = GetMaterial(exitsData.Colors);
-            Renderer renderer = blockObj.GetComponentInChildren<Renderer>();
+            Renderer renderer = exitObj.GetComponentInChildren<Renderer>();
             if (renderer != null && mat != null)
             {
                 renderer.material = mat;
             }
 
             //init et
-            //BlockBase block = blockObj.GetComponent<BlockBase>();
-            //block.Initialize(blocksData.Colors, blocksData.Direction, blocksData.Row, blocksData.Col);
+            ExitGates exit = exitObj.GetComponent<ExitGates>();
+            exit.Initialize(exitsData.Colors);
         }
     }
 
