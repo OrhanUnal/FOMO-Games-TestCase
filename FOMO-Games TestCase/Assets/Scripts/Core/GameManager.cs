@@ -7,12 +7,13 @@ public class GameManager : MonoBehaviour
 {
 
     public static GameManager instance;
-    private int moveLimit;
+    public static event Action<bool> OnLevelFinished;
+    public static event Action<int, int> UpdateCounters;
+
     private int blockCount;
     private bool hasMoveLimit;
-
-    public static event Action<bool> OnLevelFinished;
-    public static event Action<int> OnMoveCountChanged;
+    private int moveLimit;
+    private int currentLevelNumber;
 
     private void Awake()
     {
@@ -41,9 +42,9 @@ public class GameManager : MonoBehaviour
         if (!hasMoveLimit) return;
 
         moveLimit -= 1;
+        UpdateCounters?.Invoke(moveLimit, currentLevelNumber);
         if (moveLimit <= 0)
             OnLevelFinished?.Invoke(false);
-        OnMoveCountChanged?.Invoke(moveLimit);
     }
 
     private void ChangeBlockCount(int amount)
@@ -53,11 +54,12 @@ public class GameManager : MonoBehaviour
             OnLevelFinished?.Invoke(true);
     }
 
-    public void SetLevelData(int moveLimit)
+    public void SetLevelData(int moveLimit, int currentLevelNumber)
     {
         this.moveLimit = moveLimit;
+        this.currentLevelNumber = currentLevelNumber;
         hasMoveLimit = moveLimit > 0;
         blockCount = 0;
-        OnMoveCountChanged?.Invoke(moveLimit);
+        UpdateCounters?.Invoke(moveLimit, currentLevelNumber);
     }
 }

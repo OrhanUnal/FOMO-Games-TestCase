@@ -5,12 +5,12 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI moveCountText;
+    [SerializeField] private TextMeshProUGUI currentLevelNumberText;
     [SerializeField] private GameObject winPanel;
     [SerializeField] private GameObject losePanel;
 
     public static event Action OnRetryClicked;
     public static event Action OnNextLevelClicked;
-
 
     private void Start()
     {
@@ -20,19 +20,20 @@ public class UIManager : MonoBehaviour
 
     private void OnEnable()
     {
-        GameManager.OnMoveCountChanged += UpdateMoveCount;
+        GameManager.UpdateCounters += UpdateCounters;
         GameManager.OnLevelFinished += ShowResult;
     }
 
     private void OnDisable()
     {
-        GameManager.OnMoveCountChanged -= UpdateMoveCount;
+        GameManager.UpdateCounters -= UpdateCounters;
         GameManager.OnLevelFinished -= ShowResult;
     }
 
-    private void UpdateMoveCount(int remaining)
+    private void UpdateCounters(int moveCounter, int currentLevel)
     {
-        moveCountText.text = $"Moves: {remaining}";
+        moveCountText.text = $"Moves: {moveCounter}";
+        currentLevelNumberText.text = $"Current Level: {currentLevel}";
     }
 
     private void ShowResult(bool won)

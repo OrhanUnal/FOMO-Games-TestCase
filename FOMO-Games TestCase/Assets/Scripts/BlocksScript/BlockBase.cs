@@ -61,7 +61,6 @@ public class BlockBase : MonoBehaviour
         foreach(Vector3 pos in GetRayOrigins())
         {
             RaycastHit hit;
-            Debug.DrawRay(pos, directionAsVector * 10f, Color.red, 2f);
             Physics.Raycast(pos, directionAsVector, out hit);
             if (hit.distance < minDistance)
             {

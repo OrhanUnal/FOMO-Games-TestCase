@@ -8,17 +8,6 @@ public class ExitGates : MonoBehaviour
 
     private Enums.BlockColor colorID;
 
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void Initialize(int col)
     {
         colorID = (Enums.BlockColor)col;

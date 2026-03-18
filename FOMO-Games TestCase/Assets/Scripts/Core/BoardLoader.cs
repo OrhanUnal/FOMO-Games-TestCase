@@ -17,6 +17,7 @@ public class BoardLoader : MonoBehaviour
 
     private float blockGap;
     private float blockSize;
+    private Vector3 centerOfBoard;
     private LevelData levelData;
     private MaterialFactory materialFactory;
     private Transform cellParent;
@@ -46,10 +47,11 @@ public class BoardLoader : MonoBehaviour
     {
         DeserializeData();
         CalculateBlockSize();
+        CalculateMiddleOfTheBoard();
         SpawnCells();
         SpawnBlocks();
         SpawnExits();
-        GameManager.instance.SetLevelData(levelData.MoveLimit);
+        GameManager.instance.SetLevelData(levelData.MoveLimit, levelNumber);
     }
     private void DeserializeData()
     {
@@ -65,6 +67,14 @@ public class BoardLoader : MonoBehaviour
         blockSize = Mathf.Min(sizeFromWidth, sizeFromHeight);
     }
 
+    private void CalculateMiddleOfTheBoard()
+    {
+        centerOfBoard = new Vector3(
+            (levelData.ColCount - 1) * 0.5f,
+            -(levelData.RowCount - 1) * 0.5f, 
+            0) * blockSize;
+    }
+
     private void SpawnCells()
     {
         cellParent = new GameObject("Cells").transform;
@@ -75,7 +85,7 @@ public class BoardLoader : MonoBehaviour
                 cell.Col * blockSize,
                 -cell.Row * blockSize,
                 10
-            );
+            ) - centerOfBoard;
 
             GameObject cellObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cellObj.transform.position = position;
@@ -101,7 +111,7 @@ public class BoardLoader : MonoBehaviour
                 blocksData.Col * blockSize,
                 -blocksData.Row * blockSize,
                 0
-            );
+            ) - centerOfBoard;
 
 
             bool isVertical = blocksData.Direction.Contains(0) || blocksData.Direction.Contains(2);
@@ -134,7 +144,7 @@ public class BoardLoader : MonoBehaviour
                 exitsData.Col * blockSize,
                 -exitsData.Row * blockSize,
                 0
-            );
+            ) - centerOfBoard;
 
             GameObject exitObj = Object.Instantiate(prefab, position, Quaternion.identity, exitParent);
             exitObj.transform.localScale = Vector3.one * cellGap * blockSize;
