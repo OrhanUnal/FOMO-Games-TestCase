@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class InputManager : MonoBehaviour
 
     private void TrySelectBlock()
     {
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
