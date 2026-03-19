@@ -67,6 +67,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee46c0e29d355564b925483a90558318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  destroyParticlePrefab: {fileID: 5345571588891444959, guid: 9c11a69d5210dc64a8888ca021ac7982, type: 3}
 --- !u!1001 &322543312028022404
 PrefabInstance:
   m_ObjectHideFlags: 0

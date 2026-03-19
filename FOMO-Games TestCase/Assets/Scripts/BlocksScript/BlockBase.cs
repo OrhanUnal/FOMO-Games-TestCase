@@ -2,9 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class BlockBase : MonoBehaviour
 {
+    [SerializeField] 
+    private GameObject destroyParticlePrefab;
+
     private Enums.BlockColor colorId;
     private List<int> directions;
     private int row;
@@ -79,6 +83,7 @@ public class BlockBase : MonoBehaviour
 
             StartCoroutine(Move(directionAsVector, distanceToTravel, canDestroy));
         }
+        else StartCoroutine(BounceEffect(directionAsVector));
     }
 
     private IEnumerator Move(Vector3 dir, float amount, bool hitsExit)
@@ -96,15 +101,74 @@ public class BlockBase : MonoBehaviour
             yield return null;
         }
 
-        transform.position = targetPosition;
-        
-        OnBlockMoved?.Invoke();
+        transform.position = targetPosition;        
         isMoving = false;
         
         if (hitsExit)
         {
+            if (destroyParticlePrefab != null)
+            {
+                GameObject particles = Instantiate(destroyParticlePrefab, transform.position, Quaternion.identity);
+                ParticleSystem ps = particles.GetComponent<ParticleSystem>();
+                var main = ps.main;
+
+                Color blockColor = GetBlockColor();
+                main.startColor = blockColor;
+            }
             OnBlockCountChanged?.Invoke(-1);
             Destroy(gameObject);
+        }
+        else yield return StartCoroutine(BounceEffect(dir));
+        OnBlockMoved?.Invoke();
+    }
+
+    private IEnumerator BounceEffect(Vector3 moveDirection)
+    {
+        Vector3 originalScale = transform.localScale;
+        Vector3 squishScale = originalScale;
+
+        if (Mathf.Abs(moveDirection.x) > 0)
+        {
+            squishScale.x *= 0.8f;
+            squishScale.y *= 1.15f;
+        }
+        else
+        {
+            squishScale.y *= 0.8f;
+            squishScale.x *= 1.15f;
+        }
+
+        float elapsed = 0f;
+        float squishDuration = 0.08f;
+
+        while (elapsed < squishDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.localScale = Vector3.Lerp(originalScale, squishScale, elapsed / squishDuration);
+            yield return null;
+        }
+
+        elapsed = 0f;
+        float bounceDuration = 0.12f;
+        while (elapsed < bounceDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.localScale = Vector3.Lerp(squishScale, originalScale, elapsed / bounceDuration);
+            yield return null;
+        }
+
+        transform.localScale = originalScale;
+    }
+
+    private Color GetBlockColor()
+    {
+        switch (colorId)
+        {
+            case Enums.BlockColor.Blue: return Color.blue;
+            case Enums.BlockColor.Red: return Color.red;
+            case Enums.BlockColor.Yellow: return Color.yellow;
+            case Enums.BlockColor.Green: return Color.green;
+            default: return Color.white;
         }
     }
 
