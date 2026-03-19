@@ -19,4 +19,9 @@ public class ExitGates : MonoBehaviour
             return true;
         else return false;
     }
+
+    public bool IsMatchingDirection(Enums.Directions blockDirection)
+    {
+        return direction == blockDirection;
+    }
 }

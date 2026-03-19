@@ -81,6 +81,7 @@ public class BoardLoader : MonoBehaviour
 
         foreach (CellData cell in levelData.CellInfo)
         {
+            // Spawning Z = 10 since we want to see cells behind blocks and prevent their overlapping
             Vector3 position = new Vector3(
                 cell.Col * blockSize,
                 -cell.Row * blockSize,

@@ -10,10 +10,11 @@ public class BlockBase : MonoBehaviour
     private GameObject destroyParticlePrefab;
 
     private Enums.BlockColor colorId;
-    private List<int> directions;
+    private List<int> directionsList;
     private int row;
     private int col;
     private bool isMoving;
+    private bool isBouncing;
 
     protected float blockSize;
 
@@ -23,11 +24,12 @@ public class BlockBase : MonoBehaviour
     public void Initialize(int ColorID, List<int> Directions, int Row, int Col, float BlockSize)
     {
         colorId = (Enums.BlockColor)ColorID;
-        directions = Directions;
+        directionsList = Directions;
         row = Row;
         col = Col;
         blockSize = BlockSize;
         isMoving = false;
+        isBouncing = false;
     }
 
     private void Start()
@@ -35,13 +37,13 @@ public class BlockBase : MonoBehaviour
         OnBlockCountChanged?.Invoke(1);
     }
 
-    public void TryToMove(Enums.Directions direction)
+    public void TryToMove(Enums.Directions moveDirection)
     {
-        if (!directions.Contains((int)direction)) return;
-        if (isMoving) return;        
-
+        if (!directionsList.Contains((int)moveDirection)) return;
+        if (isMoving || isBouncing) return;    
+        
         Vector3 directionAsVector;
-        switch (direction)
+        switch (moveDirection)
         {
             case Enums.Directions.down:
                 directionAsVector = Vector3.down;
@@ -78,7 +80,9 @@ public class BlockBase : MonoBehaviour
             bool canDestroy = false;
 
             ExitGates closestExitGate = smallestHit.collider.GetComponent<ExitGates>();
-            if (closestExitGate && closestExitGate.IsMatchingColors(colorId))
+            if (closestExitGate && 
+                closestExitGate.IsMatchingColors(colorId) && 
+                closestExitGate.IsMatchingDirection(moveDirection))
                 canDestroy = true;
 
             StartCoroutine(Move(directionAsVector, distanceToTravel, canDestroy));
@@ -102,28 +106,38 @@ public class BlockBase : MonoBehaviour
         }
 
         transform.position = targetPosition;        
-        isMoving = false;
         
         if (hitsExit)
         {
-            if (destroyParticlePrefab != null)
-            {
-                GameObject particles = Instantiate(destroyParticlePrefab, transform.position, Quaternion.identity);
-                ParticleSystem ps = particles.GetComponent<ParticleSystem>();
-                var main = ps.main;
-
-                Color blockColor = GetBlockColor();
-                main.startColor = blockColor;
-            }
+            OnBlockMoved?.Invoke();
+            ParticleEffect();
             OnBlockCountChanged?.Invoke(-1);
             Destroy(gameObject);
+            yield break;
         }
-        else yield return StartCoroutine(BounceEffect(dir));
+
+        yield return StartCoroutine(BounceEffect(dir));
         OnBlockMoved?.Invoke();
+        isMoving = false;
+    }
+
+    private void ParticleEffect()
+    {
+        if (destroyParticlePrefab != null)
+        {
+            GameObject particles = Instantiate(destroyParticlePrefab, transform.position, Quaternion.identity);
+            ParticleSystem ps = particles.GetComponent<ParticleSystem>();
+            var main = ps.main;
+
+            Color blockColor = GetBlockColor();
+            main.startColor = blockColor;
+            Destroy(particles, 2f);
+        }
     }
 
     private IEnumerator BounceEffect(Vector3 moveDirection)
     {
+        isBouncing = true;
         Vector3 originalScale = transform.localScale;
         Vector3 squishScale = originalScale;
 
@@ -158,6 +172,7 @@ public class BlockBase : MonoBehaviour
         }
 
         transform.localScale = originalScale;
+        isBouncing = false;
     }
 
     private Color GetBlockColor()
